@@ -1,3 +1,4 @@
+const knex = require('knex')
 const connection = require('../database/database')
 const bcrypt = require('bcrypt')
 
@@ -22,6 +23,15 @@ class User{
         }
         
    }
+  async findUser(){
+     try{
+        
+     }
+     catch(e){
+        return []
+     }
+     
+  }
 }
 
 module.exports = new User
