@@ -1,8 +1,8 @@
-const { connect } = require('http2')
 const User = require('../models/User')
 class UserController{
     async index(req,res){
-        res.send('oi user controller')
+        var users = await User.findAll()
+        res.json(users)
     }
     async create(req,res){
         console.log(req.body)
@@ -27,6 +27,31 @@ class UserController{
            
             
         }  
+    }
+    async findUser(req,res){
+        var id = req.params.id
+        var result = await User.findById(id)
+        if(result == undefined){
+            res.status(404)
+            res.json({})
+        }else{
+            res.json(result)
+        }
+        
+    }
+    async edit(req,res){
+        var {id,name,email,role} = req.body
+
+        var result = await User.update(id,name,email,role) 
+
+        if(result.status == false){
+            res.status(404)
+            res.send('not found')
+        }else{
+            res.status(200)
+            res.json({result,status:true})
+        }
+       
     }
 }
 module.exports = new UserController
