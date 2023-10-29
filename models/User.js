@@ -49,24 +49,49 @@ class User{
       }    
   }
   async update(id, name, email, role = 0) {
-    
-     try {
-        var user = await this.findById(id)
-        if(user == undefined){
-           return {status:false,err:'User Not Exists',user:[]}     
-        }else{
-            var editUser = {name,email,role}
-            name == undefined ?editUser.name = user.name : editUser.name = name
-            email == undefined ?editUser.email = user.email : editUser.email = email 
-            role == undefined ?editUser.role = user.role : editUser.role = role
-            
-            var result = await connection.update(editUser).where({id:id}).table("users")
-            return result
-        }
-     } catch (error) {
-        console.log(error)
+   try {
+     var user = await this.findById(id);
+     if (user == undefined) {
+       return { status: false, err: 'User Not Exists', user: [] };
+     } else {
+       var editUser = {
+         name: name == undefined ? user.name : name,
+         email: email == undefined ? user.email : email,
+         role: role == undefined ? user.role : role
+       };
+       if (user.email == email) {
+         console.log('\u001b[33m Email duplo');
+         return { status: false, err: 'Esse E-mail ja foi Utilizado' };
+       } else {
+         try {
+           var result = await connection.update(editUser).where({ id: id }).table("users");
+           console.log(result);
+           return { status: true };
+         } catch (error) {
+           console.log(error);
+           throw error; // Lança o erro para que o controlador possa tratá-lo.
+         }
+       }
      }
-    
+   } catch (error) {
+     console.log(error);
+     throw error; // Lança o erro para que o controlador possa tratá-lo.
+   }
+ }
+
+ async delete(id){
+   var result = await this.findById(id)
+   if(result != undefined){
+        try {
+           await connection.delete().where({id:id}).table("users")
+           return {status:true}
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+   }else{
+      return {status:false,err:'usuario Inexistente'}
+   }
   }
 }
 

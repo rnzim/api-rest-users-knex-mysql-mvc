@@ -40,18 +40,36 @@ class UserController{
         
     }
     async edit(req,res){
-        var {id,name,email,role} = req.body
-
-        var result = await User.update(id,name,email,role) 
-
-        if(result.status == false){
-            res.status(404)
-            res.send('not found')
-        }else{
-            res.status(200)
-            res.json({result,status:true})
+        var { id, name, email, role } = req.body;
+        try {
+          var result = await User.update(id, name, email, role);
+          if (result.status == true) {
+            res.status(200).send('Ok');
+          } else {
+            res.status(400).json(result);
+          }
+        } catch (error) {
+          console.log(error);
+          res.status(500).send('Internal Server Error');
         }
-       
     }
+    async delete(req,res){
+        var id = req.params.id
+        try {
+           var result =  await User.delete(id)
+           if(result > 0){
+              res.status(200).send('OK')
+           }else{
+              if(result < 0)
+               res.status(400)
+               res.json(result)
+           }
+        } catch (error) {
+             res.status(500).send('Internal Server Error');
+        }
+    }
+        
 }
+
+
 module.exports = new UserController
