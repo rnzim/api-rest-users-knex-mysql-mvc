@@ -1,7 +1,7 @@
-const knex = require('knex')
 const connection = require('../database/database')
+const PasswordToken = require('../models/PasswordToken ')
 const bcrypt = require('bcrypt')
-const { findUser } = require('../controllers/UserController')
+
 
 class User{
 
@@ -48,6 +48,19 @@ class User{
          return []
       }    
   }
+  async findByEmail(email){
+    try{
+      var result = await connection.select("id","name","email","role","pass").table("users").where({email:email})
+      if(result.length > 0){
+          return result[0]
+      }
+      
+
+    } catch(e){
+       console.log(e)
+       return []
+    }    
+}
   async update(id, name, email, role = 0) {
    try {
      var user = await this.findById(id);
@@ -92,6 +105,16 @@ class User{
    }else{
       return {status:false,err:'usuario Inexistente'}
    }
+  }
+  async alterpass(npass,id,token){
+    var hash =  await bcrypt.hashSync(npass,11)
+    try {
+      await connection.update({pass:hash}).where({id:id}).table('users')
+      await PasswordToken.setUsed(token)
+    } catch (error) {
+       console.log(error)
+    }
+   
   }
 }
 

@@ -1,4 +1,8 @@
 const User = require('../models/User')
+const PasswordToken = require('../models/PasswordToken ')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const secret = "miznr"
 class UserController{
     async index(req,res){
         var users = await User.findAll()
@@ -67,6 +71,43 @@ class UserController{
         } catch (error) {
              res.status(500).send('Internal Server Error');
         }
+    }
+    async recoveryPass(req,res){
+            var email = req.body.email
+            var result = await PasswordToken.create(email)
+            if(result.status == false){
+              res.status(406).send({erro:result.err})
+            }else{
+              res.status(200).send({token:result.token})
+            }
+    }
+    async chargePassword(req,res){
+        var npass = req.body.pass
+        var token =  req.body.token
+        var tokenIsValid = await PasswordToken.validate(token)
+
+        if(tokenIsValid.status ){
+            await User.alterpass(npass,tokenIsValid.token.user_id,tokenIsValid.token)
+           
+            res.status(200).send("Alterada")
+        }else{
+            res.status(406).send('token Invalido')
+        }
+    }
+    async login(req,res){
+         var {email,pass} = req.body
+         var user = await User.findByEmail(email)
+         if(user != undefined){
+           let result = await bcrypt.compare(pass,user.pass)
+           if(result){
+             let token = jwt.sign({email:user.email,role:user.role,name:user.name},secret)
+             res.status(200).send({token})
+           }else{
+             res.status(200).send("Senha Incorreta")
+           }
+         }else{
+            res.status(400).send('e-mail Inexistente')
+         }
     }
         
 }
